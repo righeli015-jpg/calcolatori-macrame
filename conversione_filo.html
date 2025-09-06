@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Calcolatore Lunghezza Filo</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f8ff; text-align: center; padding: 50px; }
+h1 { color: #1e90ff; }
+label { display: block; margin: 10px 0 5px; }
+input { padding: 8px; width: 100px; }
+button { margin-top: 20px; padding: 10px 20px; background: #1e90ff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+button:hover { background: #187bcd; }
+#result { margin-top: 20px; font-weight: bold; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<h1>Converti Lunghezza Filo</h1>
+
+<label for="lunghezza">Lunghezza originale (cm):</label>
+<input type="number" id="lunghezza" min="0">
+
+<label for="spessore1">Spessore originale (mm):</label>
+<input type="number" id="spessore1" min="0">
+
+<label for="spessore2">Nuovo spessore (mm):</label>
+<input type="number" id="spessore2" min="0">
+
+<br>
+<button onclick="calcola()">Calcola</button>
+
+<div id="result"></div>
+
+<script>
+function calcola() {
+    const L1 = parseFloat(document.getElementById('lunghezza').value);
+    const S1 = parseFloat(document.getElementById('spessore1').value);
+    const S2 = parseFloat(document.getElementById('spessore2').value);
+
+    if (isNaN(L1) || isNaN(S1) || isNaN(S2) || S1 === 0) {
+        document.getElementById('result').innerText = "Inserisci valori validi!";
+        return;
+    }
+
+    // Formula corretta: più spesso → serve più filo, più sottile → serve meno filo
+    const L2 = L1 * (S2 / S1);
+    document.getElementById('result').innerText = "Lunghezza necessaria: " + L2.toFixed(2) + " cm";
+}
+</script>
+
+</body>
+</html>
