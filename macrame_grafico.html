@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Calcolatore Filo Macramé con Grafico</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
+h1 { color: #333; }
+label { display: block; margin-top: 10px; }
+input, select { padding: 5px; margin-top: 5px; width: 220px; }
+button { margin-top: 15px; padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+button:hover { background: #45a049; }
+#sezioni { margin-top: 20px; }
+.sezione { margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: #fff; }
+#risultato { margin-top: 20px; font-weight: bold; }
+#grafico { max-width: 700px; margin-top: 30px; }
+</style>
+</head>
+<body>
+
+<h1>Calcolatore Filo Macramé con Grafico</h1>
+
+<label>Numero di fili:
+  <input type="number" id="fili" placeholder="Es. 4">
+</label>
+
+<label>Extra sicurezza (%):
+  <input type="number" id="extra" placeholder="Es. 20">
+</label>
+
+<label>Numero di sezioni:
+  <input type="number" id="numSezioni" placeholder="Es. 2">
+  <button onclick="creaSezioni()">Crea sezioni</button>
+</label>
+
+<div id="sezioni"></div>
+
+<button onclick="calcolaFilo()">Calcola filo</button>
+
+<div id="risultato"></div>
+<canvas id="grafico"></canvas>
+
+<script>
+let chart; // Variabile globale per il grafico
+
+function creaSezioni() {
+    const container = document.getElementById("sezioni");
+    container.innerHTML = "";
+    const n = parseInt(document.getElementById("numSezioni").value);
+    if (!n || n <= 0) { alert("Inserisci un numero valido di sezioni"); return; }
+
+    for (let i = 1; i <= n; i++) {
+        const div = document.createElement("div");
+        div.className = "sezione";
+        div.innerHTML = `
+            <h3>Sezione ${i}</h3>
+            <label>Lunghezza sezione (cm):
+              <input type="number" class="lunghezza" placeholder="Es. 50" required>
+            </label>
+            <label>Tipo di nodo:
+              <select class="nodo">
+                <option value="square">Square Knot</option>
+                <option value="spiral">Spiral Knot</option>
+                <option value="cordonOrizzontale">Cordon Orizzontale</option>
+                <option value="cordonVerticale">Cordon Verticale</option>
+                <option value="cordonObliquo">Cordon Obliquo</option>
+                <option value="cordonMargarete">Cordon Margarete</option>
+                <option value="altro">Altro</option>
+              </select>
+            </label>
+            <label>Spessore filo (mm):
+              <input type="number" class="spessore" placeholder="Es. 3" required>
+            </label>
+        `;
+        container.appendChild(div);
+    }
+}
+
+function calcolaFilo() {
+    const fili = parseInt(document.getElementById("fili").value);
+    if (!fili || fili <= 0) { alert("Inserisci un numero valido di fili"); return; }
+
+    const extraPercent = parseFloat(document.getElementById("extra").value) || 20;
+    const extra = extraPercent / 100;
+
+    const sezioni = document.querySelectorAll(".sezione");
+    if (sezioni.length === 0) { alert("Crea prima le sezioni"); return; }
+
+    let lunghezzaTotalePerFilo = 0;
+    let datiGrafico = [];
+    let etichette = [];
+
+    for (let i = 0; i < sezioni.length; i++) {
+        const sec = sezioni[i];
+        const lunghezza = parseFloat(sec.querySelector(".lunghezza").value);
+        const nodo = sec.querySelector(".nodo").value;
+        const spessore = parseFloat(sec.querySelector(".spessore").value);
+
+        if (!lunghezza || lunghezza <= 0 || !spessore || spessore <= 0) {
+            alert("Compila tutti i campi di ogni sezione con valori validi");
+            return;
+        }
+
+        let fattore;
+        switch(nodo) {
+            case "square": fattore = 4; break;
+            case "spiral": fattore = 2.5; break;
+            case "cordonOrizzontale": fattore = 1.5; break;
+            case "cordonVerticale": fattore = 1.7; break;
+            case "cordonObliquo": fattore = 2; break;
+            case "cordonMargarete": fattore = 3; break;
+            default: fattore = 3; break;
+        }
+
+        fattore *= (1 + spessore / 10);
+        const lunghezzaSezione = lunghezza * fattore * (1 + extra);
+
+        lunghezzaTotalePerFilo += lunghezzaSezione;
+        datiGrafico.push(lunghezzaSezione);
+        etichette.push("Sezione " + (i + 1));
+    }
+
+    const lunghezzaTotale = lunghezzaTotalePerFilo * fili;
+
+    document.getElementById("risultato").innerHTML =
+        `Lunghezza consigliata per ogni filo: ${lunghezzaTotalePerFilo.toFixed(1)} cm<br>` +
+        `Lunghezza totale di tutti i fili: ${lunghezzaTotale.toFixed(1)} cm`;
+
+    // Creazione grafico
+    const ctx = document.getElementById('grafico').getContext('2d');
+    if (chart) chart.destroy(); // Rimuove grafico precedente
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: etichette,
+            datasets: [{
+                label: 'Lunghezza filo per sezione (cm)',
+                data: datiGrafico,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
